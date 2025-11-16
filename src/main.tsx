@@ -14,6 +14,12 @@ import RegisterPage from '@/pages/client/auth/Register/register';
 import { App } from 'antd';
 import 'styles/global.scss'
 import { AppProvider } from 'components/context/app.context';
+import ProtectedRoute from 'components/auth';
+import DashBoardPage from 'components/admin/dashboard';
+import ManageBookPage from 'components/admin/manage.book';
+import ManageOrderPage from 'components/admin/manage.order';
+import ManageUserPage from 'components/admin/manage.user';
+import LayoutAdmin from 'components/layout/layout.admin';
 
 const router = createBrowserRouter([
   {
@@ -32,6 +38,61 @@ const router = createBrowserRouter([
         path: "/about",
         element: <div><AboutPage /></div>
       },
+      {
+        path: "/checkout",
+        element: (
+          <ProtectedRoute>
+            <div>checkout page</div>
+          </ProtectedRoute>
+        )
+      }
+    ]
+  },
+  {
+    path: "admin",
+    element: <LayoutAdmin />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute>
+            <DashBoardPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "book",
+        element: (
+          <ProtectedRoute>
+            <ManageBookPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "order",
+        element: (
+          <ProtectedRoute>
+            <ManageOrderPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "user",
+        element: (
+          <ProtectedRoute>
+            <ManageUserPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/admin",
+        element: (
+          <ProtectedRoute>
+            <div>admin page</div>
+          </ProtectedRoute>
+        ),
+      },
+
     ]
   },
   {
@@ -49,7 +110,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App>
       <AppProvider>
-      <RouterProvider router={router} />
+        <RouterProvider router={router} />
       </AppProvider>
     </App>
   </StrictMode>,
