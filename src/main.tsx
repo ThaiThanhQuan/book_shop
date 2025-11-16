@@ -9,17 +9,18 @@ import {
 import AboutPage from 'pages/client/book';
 import BookPage from 'pages/client/book';
 import HomePage from 'pages/client/home';
-import LoginPage from '@/pages/client/auth/Login/login';
-import RegisterPage from '@/pages/client/auth/Register/register';
-import { App } from 'antd';
+import LoginPage from 'pages/client/auth/Login/login';
+import RegisterPage from 'pages/client/auth/Register/register';
+import { App, ConfigProvider } from 'antd';
 import 'styles/global.scss'
 import { AppProvider } from 'components/context/app.context';
 import ProtectedRoute from 'components/auth';
-import DashBoardPage from 'components/admin/dashboard';
-import ManageBookPage from 'components/admin/manage.book';
-import ManageOrderPage from 'components/admin/manage.order';
-import ManageUserPage from 'components/admin/manage.user';
+import DashBoardPage from 'pages/admin/dashboard';
+import ManageBookPage from 'pages/admin/manage.book';
+import ManageOrderPage from 'pages/admin/manage.order';
+import ManageUserPage from 'pages/admin/manage.user';
 import LayoutAdmin from 'components/layout/layout.admin';
+import enUS from 'antd/locale/en_US';
 
 const router = createBrowserRouter([
   {
@@ -110,7 +111,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App>
       <AppProvider>
-        <RouterProvider router={router} />
+        <ConfigProvider locale={enUS}>
+          <RouterProvider router={router} />
+        </ConfigProvider>
       </AppProvider>
     </App>
   </StrictMode>,
