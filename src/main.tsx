@@ -22,6 +22,7 @@ import ManageUserPage from 'pages/admin/manage.user';
 import LayoutAdmin from 'components/layout/layout.admin';
 import enUS from 'antd/locale/en_US';
 
+
 const router = createBrowserRouter([
   {
     path: "/",
