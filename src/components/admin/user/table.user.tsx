@@ -122,10 +122,10 @@ const TableUser = () => {
                         }
 
                         // default
-                        query += `&sort=-createdAt`
-
                         if (sort && sort.createdAt) {
                             query += `&sort=${sort.createdAt === 'ascend' ? 'createdAt' : '-createdAt'}`
+                        } else {
+                            query += `&sort=-createdAt`
                         }
                     }
 
@@ -199,6 +199,7 @@ const TableUser = () => {
             <ImportUser
                 openModalImport={openModalImport}
                 setOpenModalImport={setOpenModalImport}
+                refreshTable={refreshTable}
             />
         </>
     );
