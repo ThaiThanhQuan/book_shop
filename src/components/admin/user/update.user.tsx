@@ -23,7 +23,7 @@ const UpdateUser = (props: IProps) => {
     const { openUpdateUser, setOpenUpdateUser, refreshTable, dataUpdate, setDataUpdate } = props
 
     const [isSubmit, setIsSubmit] = useState<boolean>(false);
-    const { message, notificaiton } = App.useApp();
+    const { message, notification } = App.useApp();
 
     const [form] = Form.useForm();
 
@@ -49,7 +49,7 @@ const UpdateUser = (props: IProps) => {
             setDataUpdate(null)
             refreshTable()
         } else {
-            notificaiton.error({
+            notification.error({
                 message: "Đã có lỗi xảy ra",
                 description: res.message
             })
