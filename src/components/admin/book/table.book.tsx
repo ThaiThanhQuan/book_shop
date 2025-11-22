@@ -1,4 +1,4 @@
-import { deleteUsersAPI, getUsersAPI } from '@/services/api';
+import { deleteUsersAPI, getBooksAPI, getUsersAPI } from '@/services/api';
 import { dateRangeValidate } from '@/services/helper';
 import { CloudDownloadOutlined, DeleteTwoTone, EditTwoTone, ExportOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
@@ -11,15 +11,16 @@ import ImportUser from './data/import.user';
 import { CSVLink } from 'react-csv';
 import UpdateUser from './update.user';
 import dayjs from 'dayjs';
+import DetailBook from './detail.book';
+import CreateBook from './create.book';
+import UpdateBook from './update.book';
 
 type TSearch = {
-    fullName: string;
-    email: string;
-    createdAt: string;
-    createdAtRange: string;
+    mainText: string;
+    author: string;
 }
 
-const TableUser = () => {
+const TableBook = () => {
     const actionRef = useRef<ActionType>();
     const [meta, setMeta] = useState({
         current: 1,
@@ -29,14 +30,14 @@ const TableUser = () => {
     })
 
     const [openViewDetail, setOpenViewDetail] = useState<boolean>(false);
-    const [dataViewDetail, setDataViewDetail] = useState<IUserTable | null>(null);
+    const [dataViewDetail, setDataViewDetail] = useState<IBookTable | null>(null);
 
     const [openCreateUser, setOpenCreateUser] = useState<boolean>(false);
     const [openModalImport, setOpenModalImport] = useState<boolean>(false);
-    const [currentData, setCurrentData] = useState<IUserTable[]>([]);
+    const [currentData, setCurrentData] = useState<IBookTable[]>([]);
 
     const [openUpdateUser, setOpenUpdateUser] = useState<boolean>(false);
-    const [dataUpdate, setDataUpdate] = useState<IUserTable | null>(null);
+    const [dataUpdate, setDataUpdate] = useState<IBookTable | null>(null);
 
     const [isDeleteUser, setIsDeleteUser] = useState<boolean>(false);
     const { message, notification } = App.useApp();
@@ -56,7 +57,7 @@ const TableUser = () => {
         setIsDeleteUser(false)
     }
 
-    const columns: ProColumns<IUserTable>[] = [
+    const columns: ProColumns<IBookTable>[] = [
         {
             dataIndex: 'index',
             valueType: 'indexBorder',
@@ -78,35 +79,38 @@ const TableUser = () => {
             },
         },
         {
-            title: 'Full Name',
-            dataIndex: 'fullName',
+            title: 'Tên sách',
+            dataIndex: 'mainText',
         },
         {
-            title: 'Email',
-            dataIndex: 'email',
-            copyable: true,
+            title: 'Thể loại',
+            dataIndex: 'category',
+            hideInSearch: true,
         },
         {
-            title: 'Created At',
-            dataIndex: 'createdAt',
+            title: 'Tác giả',
+            dataIndex: 'author',
+        },
+        {
+            title: 'Giá tiền',
+            dataIndex: 'price',
+            hideInSearch: true,
+            sorter: true,
+
+            render(dom, entity, index, action, schema) {
+                return (
+                    <>
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(entity.price)}
+                    </>
+                )
+            },
+        },
+        {
+            title: 'Ngày cập nhật',
+            dataIndex: 'updatedAt',
             valueType: 'date',
             sorter: true,
             hideInSearch: true,
-
-            /* Định dạng ngày */
-            // render(dom, entity, index, action, schema) {
-            //     return (
-            //         <>
-            //             {dayjs(entity.createdAt).format('DD/MM/YYYY')}
-            //         </>
-            //     )
-            // },
-        },
-        {
-            title: 'Created At',
-            dataIndex: 'createdAtRange',
-            valueType: 'dateRange',
-            hideInTable: true,
         },
         {
             title: 'Action',
@@ -116,22 +120,22 @@ const TableUser = () => {
                     <>
                         <EditTwoTone
                             twoToneColor="#f57800"
-                            style={{ cursor: 'pointer', marginRight: 15 }}
+                            style={{ cursor: 'pointer', marginRight: 12 }}
                             onClick={() => {
-                                setOpenUpdateUser(true)
-                                setDataUpdate(entity)
+                                // setOpenUpdateUser(true)
+                                // setDataUpdate(entity)
                             }}
                         />
                         <Popconfirm
                             placement='leftTop'
                             title="Xác nhận xóa user"
                             description="Bạn có chắc chắn xóa user này ?"
-                            onConfirm={() => handleDeleteUser(entity._id)}
+                            // onConfirm={() => handleDeleteUser(entity._id)}
                             okText="Xác nhận"
                             cancelText="Hủy"
-                            okButtonProps={{ loading: isDeleteUser }}
+                        // okButtonProps={{ loading: isDeleteUser }}
                         >
-                            <span style={{ cursor: 'pointer', marginLeft: 20 }}>
+                            <span style={{ cursor: 'pointer' }}>
                                 <DeleteTwoTone
                                     twoToneColor="#ff4d4f"
                                     style={{ cursor: 'pointer' }}
@@ -150,7 +154,7 @@ const TableUser = () => {
     }
     return (
         <>
-            <ProTable<IUserTable, TSearch>
+            <ProTable<IBookTable, TSearch>
                 columns={columns}
                 actionRef={actionRef}
                 cardBordered
@@ -160,27 +164,30 @@ const TableUser = () => {
                     let query = ""
                     if (params) {
                         query += `current=${params.current}&pageSize=${params.pageSize}`
-                        if (params.email) {
-                            query += `&email=/${params.email}/i`
+                        if (params.mainText) {
+                            query += `&mainText=/${params.mainText}/i`
                         }
-                        if (params.fullName) {
-                            query += `&fullName=/${params.fullName}/i`
-                        }
-
-                        const createDateRange = dateRangeValidate(params.createdAtRange)
-                        if (createDateRange) {
-                            query += `&createdAt>=${createDateRange[0]}&createdAt<=${createDateRange[1]}`
+                        if (params.author) {
+                            query += `&author=/${params.author}/i`
                         }
 
                         // default
-                        if (sort && sort.createdAt) {
-                            query += `&sort=${sort.createdAt === 'ascend' ? 'createdAt' : '-createdAt'}`
+
+                        if (sort && sort.price) {
+                            query += `&sort=${sort.price === 'ascend' ? 'price' : '-price'}`
                         } else {
-                            query += `&sort=-createdAt`
+                            query += `&sort=-price`
                         }
+
+                        if (sort && sort.updatedAt) {
+                            query += `&sort=${sort.updatedAt === 'ascend' ? 'updatedAt' : '-updatedAt'}`
+                        } else {
+                            query += `&sort=-updatedAt`
+                        }
+
                     }
 
-                    const res = await getUsersAPI(query);
+                    const res = await getBooksAPI(query);
                     if (res.data) {
                         setMeta(res.data.meta)
                         setCurrentData(res.data?.result ?? [])
@@ -214,16 +221,10 @@ const TableUser = () => {
                         return (<div>{range[0]} - {range[1]} trên {total} rows</div>)
                     }
                 }}
-                headerTitle="Table user"
+                headerTitle="Table book"
                 toolBarRender={() => [
                     <Button icon={<ExportOutlined />} type='primary'>
-                        <CSVLink filename="export-users.csv" data={currentData}>Export</CSVLink>
-                    </Button>,
-                    <Button
-                        icon={<CloudDownloadOutlined />}
-                        type='primary'
-                        onClick={() => setOpenModalImport(true)}>
-                        Import
+                        <CSVLink filename="export-book.csv" data={currentData}>Export</CSVLink>
                     </Button>,
                     <Button
                         key="button"
@@ -238,32 +239,27 @@ const TableUser = () => {
 
                 ]}
             />
-            <DetailUser
+            <DetailBook
                 openViewDetail={openViewDetail}
                 setOpenViewDetail={setOpenViewDetail}
                 dataViewDetail={dataViewDetail}
                 setDataViewDetail={setDataViewDetail}
             />
 
-            <CreateUser
-                openCreateUser={openCreateUser}
-                setOpenCreateUser={setOpenCreateUser}
-                refreshTable={refreshTable}
+            <CreateBook
+            // openCreateUser={openCreateUser}
+            // setOpenCreateUser={setOpenCreateUser}
+            // refreshTable={refreshTable}
             />
-            <ImportUser
-                openModalImport={openModalImport}
-                setOpenModalImport={setOpenModalImport}
-                refreshTable={refreshTable}
-            />
-            <UpdateUser
-                openUpdateUser={openUpdateUser}
-                setOpenUpdateUser={setOpenUpdateUser}
-                refreshTable={refreshTable}
-                dataUpdate={dataUpdate}
-                setDataUpdate={setDataUpdate}
+            <UpdateBook
+            // openUpdateUser={openUpdateUser}
+            // setOpenUpdateUser={setOpenUpdateUser}
+            // refreshTable={refreshTable}
+            // dataUpdate={dataUpdate}
+            // setDataUpdate={setDataUpdate}
             />
         </>
     );
 };
 
-export default TableUser;
+export default TableBook;
