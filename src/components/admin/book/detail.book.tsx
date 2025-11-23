@@ -24,7 +24,6 @@ const DetailBook = (props: IProps) => {
 
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
-    const [previewTitle, setPreviewTitle] = useState('');
 
     const [fileList, setFileList] = useState<UploadFile[]>([]);
 

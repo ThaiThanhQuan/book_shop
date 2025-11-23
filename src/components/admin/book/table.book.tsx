@@ -1,16 +1,10 @@
-import { deleteUsersAPI, getBooksAPI, getUsersAPI } from '@/services/api';
-import { dateRangeValidate } from '@/services/helper';
-import { CloudDownloadOutlined, DeleteTwoTone, EditTwoTone, ExportOutlined, PlusOutlined } from '@ant-design/icons';
+import { deleteUsersAPI, getBooksAPI } from '@/services/api';
+import { DeleteTwoTone, EditTwoTone, ExportOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App, Button, Popconfirm } from 'antd';
 import { useRef, useState } from 'react';
-import DetailUser from './detail.user';
-import CreateUser from './create.user';
-import ImportUser from './data/import.user';
 import { CSVLink } from 'react-csv';
-import UpdateUser from './update.user';
-import dayjs from 'dayjs';
 import DetailBook from './detail.book';
 import CreateBook from './create.book';
 import UpdateBook from './update.book';
@@ -32,11 +26,11 @@ const TableBook = () => {
     const [openViewDetail, setOpenViewDetail] = useState<boolean>(false);
     const [dataViewDetail, setDataViewDetail] = useState<IBookTable | null>(null);
 
-    const [openCreateUser, setOpenCreateUser] = useState<boolean>(false);
-    const [openModalImport, setOpenModalImport] = useState<boolean>(false);
+    const [openModalCreate, setOpenModalCreate] = useState<boolean>(false);
+
     const [currentData, setCurrentData] = useState<IBookTable[]>([]);
 
-    const [openUpdateUser, setOpenUpdateUser] = useState<boolean>(false);
+    const [openUpdateBook, setOpenUpdateBook] = useState<boolean>(false);
     const [dataUpdate, setDataUpdate] = useState<IBookTable | null>(null);
 
     const [isDeleteUser, setIsDeleteUser] = useState<boolean>(false);
@@ -122,8 +116,8 @@ const TableBook = () => {
                             twoToneColor="#f57800"
                             style={{ cursor: 'pointer', marginRight: 12 }}
                             onClick={() => {
-                                // setOpenUpdateUser(true)
-                                // setDataUpdate(entity)
+                                setOpenUpdateBook(true)
+                                setDataUpdate(entity)
                             }}
                         />
                         <Popconfirm
@@ -230,7 +224,7 @@ const TableBook = () => {
                         key="button"
                         icon={<PlusOutlined />}
                         onClick={() => {
-                            setOpenCreateUser(true);
+                            setOpenModalCreate(true);
                         }}
                         type="primary"
                     >
@@ -247,16 +241,16 @@ const TableBook = () => {
             />
 
             <CreateBook
-            // openCreateUser={openCreateUser}
-            // setOpenCreateUser={setOpenCreateUser}
-            // refreshTable={refreshTable}
+                openModalCreate={openModalCreate}
+                setOpenModalCreate={setOpenModalCreate}
+                refreshTable={refreshTable}
             />
             <UpdateBook
-            // openUpdateUser={openUpdateUser}
-            // setOpenUpdateUser={setOpenUpdateUser}
-            // refreshTable={refreshTable}
-            // dataUpdate={dataUpdate}
-            // setDataUpdate={setDataUpdate}
+                openUpdateBook={openUpdateBook}
+                setOpenUpdateBook={setOpenUpdateBook}
+                refreshTable={refreshTable}
+                dataUpdate={dataUpdate}
+                setDataUpdate={setDataUpdate}
             />
         </>
     );
