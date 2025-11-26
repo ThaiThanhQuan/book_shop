@@ -1,4 +1,4 @@
-import { deleteUsersAPI, getBooksAPI } from '@/services/api';
+import { deleteBooksAPI, getBooksAPI } from '@/services/api';
 import { DeleteTwoTone, EditTwoTone, ExportOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
@@ -33,14 +33,14 @@ const TableBook = () => {
     const [openUpdateBook, setOpenUpdateBook] = useState<boolean>(false);
     const [dataUpdate, setDataUpdate] = useState<IBookTable | null>(null);
 
-    const [isDeleteUser, setIsDeleteUser] = useState<boolean>(false);
+    const [isDeleteBook, setIsDeleteBook] = useState<boolean>(false);
     const { message, notification } = App.useApp();
 
-    const handleDeleteUser = async (_id: string) => {
-        setIsDeleteUser(true)
-        const res = await deleteUsersAPI(_id)
+    const handleDeleteBook = async (_id: string) => {
+        setIsDeleteBook(true)
+        const res = await deleteBooksAPI(_id)
         if (res && res.data) {
-            message.success("Xóa user thành công!")
+            message.success("Xóa book thành công!")
             refreshTable()
         } else {
             notification.error({
@@ -48,7 +48,7 @@ const TableBook = () => {
                 description: res.message
             })
         }
-        setIsDeleteUser(false)
+        setIsDeleteBook(false)
     }
 
     const columns: ProColumns<IBookTable>[] = [
@@ -122,12 +122,12 @@ const TableBook = () => {
                         />
                         <Popconfirm
                             placement='leftTop'
-                            title="Xác nhận xóa user"
-                            description="Bạn có chắc chắn xóa user này ?"
-                            // onConfirm={() => handleDeleteUser(entity._id)}
+                            title="Xác nhận xóa book"
+                            description="Bạn có chắc chắn muốn xóa book này ?"
+                            onConfirm={() => handleDeleteBook(entity._id)}
                             okText="Xác nhận"
                             cancelText="Hủy"
-                        // okButtonProps={{ loading: isDeleteUser }}
+                            okButtonProps={{ loading: isDeleteBook }}
                         >
                             <span style={{ cursor: 'pointer' }}>
                                 <DeleteTwoTone
@@ -217,9 +217,13 @@ const TableBook = () => {
                 }}
                 headerTitle="Table book"
                 toolBarRender={() => [
-                    <Button icon={<ExportOutlined />} type='primary'>
-                        <CSVLink filename="export-book.csv" data={currentData}>Export</CSVLink>
-                    </Button>,
+
+                    <CSVLink filename="export-book.csv" data={currentData}>
+                        <Button icon={<ExportOutlined />} type='primary'>
+                            Export
+                        </Button>
+                    </CSVLink>
+                    ,
                     <Button
                         key="button"
                         icon={<PlusOutlined />}
