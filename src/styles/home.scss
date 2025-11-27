@@ -4,13 +4,86 @@
 
 .ant-rate-text {}
 
+.product-filter {
+    padding: 20px;
+    background-color: #fff;
+
+    .filter-icon {
+        margin-right: 5px;
+    }
+
+    // Header của bộ lọc
+    .product-filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        border-bottom: 1px solid #f0f0f0;
+
+        .reset-icon {
+            cursor: pointer;
+            color: #8c8c8c;
+            font-size: 16px;
+            transition: color 0.3s ease-in-out;
+
+            &:hover {
+                color: #1890ff;
+            }
+
+            &:active {
+                color: #096dd9; // Màu xanh đậm hơn
+            }
+        }
+    }
+
+    .product-filter-group {
+        padding-top: 15px;
+
+        .filter-checkbox {
+            color: #595959;
+            padding: 10px;
+        }
+    }
+
+    // Đường phân cách
+    .filter-divider {
+        margin: 10px 0;
+    }
+
+    // Khoảng giá
+    .price-range-group {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+
+        .price-input {
+            width: 100%;
+        }
+    }
+
+    // Nút áp dụng
+    .apply-btn {
+        width: 100%;
+        font-weight: 500;
+    }
+
+    // Đánh giá
+    .rating-item {
+        cursor: pointer;
+        padding: 4px 0;
+    }
+}
+
 .customize-row {
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
 
     .column {
-        flex: 0 0 calc(20% - 12.8px); // 20% cho 5 cột, trừ gap
+        flex: 0 0 calc(20% - 12.8px);
         max-width: calc(20% - 12.8px);
 
         .wrapper {

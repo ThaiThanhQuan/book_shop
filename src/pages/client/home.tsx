@@ -1,27 +1,122 @@
+import { getBooksAPI, getCategoryAPI } from "@/services/api"
 import { FilterTwoTone, ReloadOutlined } from "@ant-design/icons"
-import { Button, Checkbox, Col, Divider, Form, InputNumber, Pagination, Rate, Row, Tabs } from "antd"
+import { Button, Checkbox, Col, Divider, Form, InputNumber, Pagination, Rate, Row, Spin, Tabs, type FormProps } from "antd"
+import { useEffect, useState } from "react"
 import 'styles/home.scss'
+
+type FieldType = {
+    range: {
+        from: number
+        to: number
+    }
+    category: string[]
+}
 
 const HomePage = () => {
 
+    const [listCategory, setListCategory] = useState<{
+        label: string, value: string
+    }[]>([])
+
+    const [listBook, setListBook] = useState<IBookTable[]>([])
+    const [current, setCurrent] = useState<number>(1)
+    const [pageSize, setPageSize] = useState<number>(5)
+    const [total, setTotal] = useState<number>(0)
+
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [filter, setFilter] = useState<string>("")
+    const [sortQuery, setSortQuery] = useState<string>("sort=-sold")
+
+    const [form] = Form.useForm()
+
+    useEffect(() => {
+        const initCategory = async () => {
+            const res = await getCategoryAPI()
+            if (res && res.data) {
+                const d = res.data.map(item => {
+                    return { label: item, value: item }
+                })
+                setListCategory(d)
+            }
+        }
+        initCategory()
+    }, [])
+
+    useEffect(() => {
+        fetchBook()
+    }, [current, pageSize, filter, sortQuery])
+
+    const fetchBook = async () => {
+        setIsLoading(true)
+        let query = `current=${current}&pageSize=${pageSize}`
+        if (filter) {
+            query += `&${filter}`
+        }
+        if (sortQuery) {
+            query += `&${sortQuery}`
+        }
+        const res = await getBooksAPI(query)
+        if (res && res.data) {
+            setListBook(res.data.result)
+            setTotal(res.data.meta.total)
+        }
+        setIsLoading(false)
+    }
+
+    const handleChangeFilter = (changedValues: any, values: any) => {
+        if (changedValues.category) {
+            const cate = values.category
+            if (cate && cate.length > 0) {
+                const f = cate.join(',')
+                setFilter(`category=${f}`)
+            } else {
+                setFilter('')
+            }
+        }
+    }
+
+    const handleOnChangePage = (pagination: { current: number, pageSize: number }) => {
+        if (pagination && pagination.current !== current) {
+            setCurrent(pagination.current)
+        }
+
+        if (pagination && pagination.pageSize !== pageSize) {
+            setPageSize(pagination.pageSize)
+            setCurrent(1)
+        }
+    }
+
+    const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
+        if (values?.range?.from >= 0 && values?.range?.to >= 0) {
+            let f = `price>=${values?.range?.from}&price<=${values?.range?.to}`;
+
+            if (values?.category?.length) {
+                const cate = values?.category?.join(',');
+                f += `&category=${cate}`;
+            }
+
+            setFilter(f);
+        }
+    };
+
     const items = [
         {
-            key: '1',
+            key: 'sort=-sold',
             label: 'Phổ biến',
             children: <></>
         },
         {
-            key: '2',
+            key: 'sort=-updatedAt',
             label: 'Hàng mới',
             children: <></>
         },
         {
-            key: '3',
+            key: 'sort=price',
             label: 'Giá thấp đến cao',
             children: <></>
         },
         {
-            key: '4',
+            key: 'sort=-price',
             label: 'Giá cao đến thấp',
             children: <></>
         }
@@ -30,66 +125,59 @@ const HomePage = () => {
     return (
         <div className="container">
             <Row gutter={[20, 20]}>
-                <Col md={4} sm={0} xs={0} style={{ border: '1px solid green' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span><FilterTwoTone />Bộ lọc tìm kiếm</span>
-                        <ReloadOutlined title="Reset" onClick={() => { }} />
+                <Col md={4} sm={0} xs={0} className="product-filter">
+                    <div className="product-filter-header">
+                        <span><FilterTwoTone className="filter-icon" />Bộ lọc tìm kiếm</span>
+                        <ReloadOutlined
+                            className="reset-icon"
+                            title="Reset"
+                            onClick={() => {
+                                form.resetFields()
+                                setFilter('')
+                            }}
+                        />
                     </div>
                     <Form
+                        onFinish={onFinish}
+                        className="filter-form"
+                        form={form}
+                        onValuesChange={(changedValues, values) => handleChangeFilter(changedValues, values)}
                     >
-                        <Form.Item
-                            name="category"
-                            label="Danh mục sản phẩm"
-                            labelCol={{ span: 24 }}
-                        >
-                            <Checkbox.Group>
-                                <Row>
-                                    <Col span={24}>
-                                        <Checkbox value="A">
-                                            A
-                                        </Checkbox>
-                                    </Col>
-                                    <Col span={24}>
-                                        <Checkbox value="B">
-                                            B
-                                        </Checkbox>
-                                    </Col>
-                                    <Col span={24}>
-                                        <Checkbox value="C">
-                                            C
-                                        </Checkbox>
-                                    </Col>
-                                    <Col span={24}>
-                                        <Checkbox value="D">
-                                            D
-                                        </Checkbox>
-                                    </Col>
-                                    <Col span={24}>
-                                        <Checkbox value="E">
-                                            E
-                                        </Checkbox>
-                                    </Col>
-                                    <Col span={24}>
-                                        <Checkbox value="F">
-                                            F
-                                        </Checkbox>
-                                    </Col>
-                                </Row>
-                            </Checkbox.Group>
-                        </Form.Item>
-                        <Divider />
+                        <div className="product-filter-group">
+                            <Form.Item
+                                name="category"
+                                label="Danh mục sản phẩm"
+                                labelCol={{ span: 24 }}
+                            >
+                                <Checkbox.Group>
+                                    <Row>
+                                        {listCategory?.map((item, index) => {
+                                            return (
+                                                <Col span={24} key={`index-${index}`}>
+                                                    <Checkbox value={item.value} className="filter-checkbox">
+                                                        {item.label}
+                                                    </Checkbox>
+                                                </Col>
+                                            )
+                                        })}
+                                    </Row>
+                                </Checkbox.Group>
+                            </Form.Item>
+                        </div>
+                        <Divider className="filter-divider" />
                         <Form.Item
                             label="Khoảng giá"
                             labelCol={{ span: 24 }}
+                            className="product-filter-group"
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div className="price-range-group">
                                 <Form.Item name={["range", "form"]}>
                                     <InputNumber
                                         name="form"
                                         min={0}
                                         placeholder="đ Từ"
-                                    // formatter={(value) => }
-                                    />
+                                        className="price-input"
+                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
                                 </Form.Item>
 
                                 <Form.Item name={["range", "to"]}>
@@ -97,38 +185,39 @@ const HomePage = () => {
                                         name="fotorm"
                                         min={0}
                                         placeholder="đ ĐẾN"
-                                    // formatter={(value) => }
-                                    />
+                                        className="price-input"
+                                        formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
                                 </Form.Item>
                             </div>
 
                             <div>
-                                <Button onClick={() => { }} style={{ width: '100%' }} type="primary">Áp dụng</Button>
+                                <Button onClick={() => form.submit()} className="apply-btn" type="primary">Áp dụng</Button>
                             </div>
                         </Form.Item>
 
-                        <Divider />
+                        <Divider className="filter-divider" />
                         <Form.Item
                             label="Đánh giá"
                             labelCol={{ span: 24 }}
+                            className="product-filter-group"
                         >
                             <div>
-                                <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
+                                <Rate className="rating-item" value={5} disabled style={{ color: '#ffce3d' }}></Rate>
                             </div>
                             <div>
-                                <Rate value={4} disabled style={{ color: '#ffce3d' }}></Rate>
+                                <Rate className="rating-item" value={4} disabled style={{ color: '#ffce3d' }}></Rate>
                                 <span className="ant-rate-text">trở lên</span>
                             </div>
                             <div>
-                                <Rate value={3} disabled style={{ color: '#ffce3d' }}></Rate>
+                                <Rate className="rating-item" value={3} disabled style={{ color: '#ffce3d' }}></Rate>
                                 <span className="ant-rate-text">trở lên</span>
                             </div>
                             <div>
-                                <Rate value={2} disabled style={{ color: '#ffce3d' }}></Rate>
+                                <Rate className="rating-item" value={2} disabled style={{ color: '#ffce3d' }}></Rate>
                                 <span className="ant-rate-text">trở lên</span>
                             </div>
                             <div>
-                                <Rate value={1} disabled style={{ color: '#ffce3d' }}></Rate>
+                                <Rate className="rating-item" value={1} disabled style={{ color: '#ffce3d' }}></Rate>
                                 <span className="ant-rate-text">trở lên</span>
                             </div>
 
@@ -136,113 +225,50 @@ const HomePage = () => {
                     </Form>
                 </Col>
 
-                <Col md={20} sm={24} xs={0} style={{ border: '1px solid red' }}>
-                    <Row>
-                        <Tabs
-                            defaultActiveKey="1"
-                            items={items}></Tabs>
-                    </Row>
-                    <Row className="customize-row">
-                        <div className="column">
-                            <div className="wrapper">
-                                <div className="wrapper">
-                                    <img src="http://localhost:8080/images/book/2-9e3ea8bedd6f628d1a7f57abcad391071.jpg" />
-                                </div>
-                                <div className="text">Salt, Fat, Acid, Heat: Mastering the Elements of Good Cooking</div>
-                                <div className="price">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(70000)}
-                                </div>
-                                <div className="rate_sold">
-                                    <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
-                                    <span>Đã bán 1k</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="column">
-                            <div className="wrapper">
-                                <div className="wrapper">
-                                    <img src="http://localhost:8080/images/book/2-9e3ea8bedd6f628d1a7f57abcad391071.jpg" />
-                                </div>
-                                <div className="text">Salt, Fat, Acid, Heat: Mastering the Elements of Good Cooking</div>
-                                <div className="price">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(70000)}
-                                </div>
-                                <div className="rate_sold">
-                                    <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
-                                    <span>Đã bán 1k</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="column">
-                            <div className="wrapper">
-                                <div className="wrapper">
-                                    <img src="http://localhost:8080/images/book/2-9e3ea8bedd6f628d1a7f57abcad391071.jpg" />
-                                </div>
-                                <div className="text">Salt, Fat, Acid, Heat: Mastering the Elements of Good Cooking</div>
-                                <div className="price">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(70000)}
-                                </div>
-                                <div className="rate_sold">
-                                    <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
-                                    <span>Đã bán 1k</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="column">
-                            <div className="wrapper">
-                                <div className="wrapper">
-                                    <img src="http://localhost:8080/images/book/2-9e3ea8bedd6f628d1a7f57abcad391071.jpg" />
-                                </div>
-                                <div className="text">Salt, Fat, Acid, Heat: Mastering the Elements of Good Cooking</div>
-                                <div className="price">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(70000)}
-                                </div>
-                                <div className="rate_sold">
-                                    <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
-                                    <span>Đã bán 1k</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="column">
-                            <div className="wrapper">
-                                <div className="wrapper">
-                                    <img src="http://localhost:8080/images/book/2-9e3ea8bedd6f628d1a7f57abcad391071.jpg" />
-                                </div>
-                                <div className="text">Salt, Fat, Acid, Heat: Mastering the Elements of Good Cooking</div>
-                                <div className="price">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(70000)}
-                                </div>
-                                <div className="rate_sold">
-                                    <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
-                                    <span>Đã bán 1k</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="column">
-                            <div className="wrapper">
-                                <div className="wrapper">
-                                    <img src="http://localhost:8080/images/book/2-9e3ea8bedd6f628d1a7f57abcad391071.jpg" />
-                                </div>
-                                <div className="text">Salt, Fat, Acid, Heat: Mastering the Elements of Good Cooking</div>
-                                <div className="price">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(70000)}
-                                </div>
-                                <div className="rate_sold">
-                                    <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
-                                    <span>Đã bán 1k</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Row>
+                <Col md={20} sm={24} xs={0} >
+                    <Spin spinning={isLoading} tip="Loading....">
+                        <div style={{ padding: '20px', background: "#fff" }}>
+                            <Row>
+                                <Tabs
+                                    defaultActiveKey="1"
+                                    items={items}
+                                    onChange={(value) => { setSortQuery(value) }}
+                                />
+                            </Row>
+                            <Row className="customize-row">
+                                {listBook?.map((item, index) => {
+                                    return (
+                                        <div className="column" key={`book-${index}`}>
+                                            <div className="wrapper">
+                                                <div className="wrapper">
+                                                    <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item.thumbnail}`} alt="thumbnail book" />
+                                                </div>
+                                                <div className="text" title={item.mainText}>{item.mainText}</div>
+                                                <div className="price">
+                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
+                                                </div>
+                                                <div className="rate_sold">
+                                                    <Rate value={5} disabled style={{ color: '#ffce3d' }}></Rate>
+                                                    <span>Đã bán 1k</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </Row>
 
-                    <Divider />
-                    <Row style={{ display: 'flex', justifyContent: "center" }}>
-                        <Pagination
-                            defaultCurrent={6}
-                            total={500}
-                            responsive
-                        />
-                    </Row>
+                            <Divider />
+                            <Row style={{ display: 'flex', justifyContent: "center" }}>
+                                <Pagination
+                                    current={current}
+                                    total={total}
+                                    pageSize={pageSize}
+                                    responsive
+                                    onChange={(p, s) => handleOnChangePage({ current: p, pageSize: s })}
+                                />
+                            </Row>
+                        </div>
+                    </Spin>
                 </Col>
             </Row>
         </div>
