@@ -11,4 +11,11 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['mixed-decls', 'color-functions', 'global-builtin', 'import']
+      }
+    }
+  }
 })
