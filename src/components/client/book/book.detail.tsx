@@ -1,60 +1,95 @@
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Col, Divider, Rate, Row } from "antd";
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BsCartPlus } from "react-icons/bs";
 import ImageGallery from "react-image-gallery";
 import "styles/book.css"
 import ModalGallery from "./modal.gallery";
 
 interface IProps {
-
+    currentBook: IBookTable | null
 }
 
 const BookDetail = (props: IProps) => {
+    const { currentBook } = props
+
+    const [imageGallery, setImageGallery] = useState<{
+        original: string
+        thumbnail: string
+        originalClass: string
+        thumbnailClass: string
+    }[]>([])
 
     const [isOpenModalGallery, setIsOpenModalGallery] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)
 
     const refGallery = useRef<ImageGallery>(null)
 
-    const images = [
-        {
-            original: "https://picsum.photos/id/1018/1000/600/",
-            thumbnail: "https://picsum.photos/id/1018/250/150/",
-            originalClass: "original-image",
-            thumbnailClass: 'thumbnail-image'
-        },
-        {
-            original: "https://picsum.photos/id/1015/1000/600/",
-            thumbnail: "https://picsum.photos/id/1015/250/150/",
-            originalClass: "original-image",
-            thumbnailClass: 'thumbnail-image'
-        },
-        {
-            original: "https://picsum.photos/id/1019/1000/600/",
-            thumbnail: "https://picsum.photos/id/1019/250/150/",
-            originalClass: "original-image",
-            thumbnailClass: 'thumbnail-image'
-        },
-        {
-            original: "https://picsum.photos/id/1018/1000/600/",
-            thumbnail: "https://picsum.photos/id/1018/250/150/",
-            originalClass: "original-image",
-            thumbnailClass: 'thumbnail-image'
-        },
-        {
-            original: "https://picsum.photos/id/1015/1000/600/",
-            thumbnail: "https://picsum.photos/id/1015/250/150/",
-            originalClass: "original-image",
-            thumbnailClass: 'thumbnail-image'
-        },
-        {
-            original: "https://picsum.photos/id/1019/1000/600/",
-            thumbnail: "https://picsum.photos/id/1019/250/150/",
-            originalClass: "original-image",
-            thumbnailClass: 'thumbnail-image'
-        },
-    ];
+    // const images = [
+    //     {
+    //         original: "https://picsum.photos/id/1018/1000/600/",
+    //         thumbnail: "https://picsum.photos/id/1018/250/150/",
+    //         originalClass: "original-image",
+    //         thumbnailClass: 'thumbnail-image'
+    //     },
+    //     {
+    //         original: "https://picsum.photos/id/1015/1000/600/",
+    //         thumbnail: "https://picsum.photos/id/1015/250/150/",
+    //         originalClass: "original-image",
+    //         thumbnailClass: 'thumbnail-image'
+    //     },
+    //     {
+    //         original: "https://picsum.photos/id/1019/1000/600/",
+    //         thumbnail: "https://picsum.photos/id/1019/250/150/",
+    //         originalClass: "original-image",
+    //         thumbnailClass: 'thumbnail-image'
+    //     },
+    //     {
+    //         original: "https://picsum.photos/id/1018/1000/600/",
+    //         thumbnail: "https://picsum.photos/id/1018/250/150/",
+    //         originalClass: "original-image",
+    //         thumbnailClass: 'thumbnail-image'
+    //     },
+    //     {
+    //         original: "https://picsum.photos/id/1015/1000/600/",
+    //         thumbnail: "https://picsum.photos/id/1015/250/150/",
+    //         originalClass: "original-image",
+    //         thumbnailClass: 'thumbnail-image'
+    //     },
+    //     {
+    //         original: "https://picsum.photos/id/1019/1000/600/",
+    //         thumbnail: "https://picsum.photos/id/1019/250/150/",
+    //         originalClass: "original-image",
+    //         thumbnailClass: 'thumbnail-image'
+    //     },
+    // ];
+
+    useEffect(() => {
+        if (currentBook) {
+            const images = []
+            if (currentBook.thumbnail) {
+                images.push({
+                    original: `${import.meta.env.VITE_BACKEND_URL}/images/book/${currentBook.thumbnail}`,
+                    thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/${currentBook.thumbnail}`,
+                    originalClass: "original-image",
+                    thumbnailClass: "thumbnail-image"
+                })
+            }
+            if (currentBook.slider) {
+                currentBook.slider?.map(item => {
+                    images.push(
+                        {
+                            original: `${import.meta.env.VITE_BACKEND_URL}/images/book/${currentBook.slider}`,
+                            thumbnail: `${import.meta.env.VITE_BACKEND_URL}/images/book/${currentBook.slider}`,
+                            originalClass: "original-image",
+                            thumbnailClass: "thumbnail-image"
+                        }
+                    )
+                })
+            }
+            setImageGallery(images)
+        }
+    }, [currentBook])
 
     const handleOnClickImage = () => {
         setIsOpenModalGallery(true)
@@ -67,7 +102,7 @@ const BookDetail = (props: IProps) => {
                 <div
                     className="view-detail-book"
                     style={{
-                        maxWidth: 1440,
+                        maxWidth: 1300,
                         margin: "0 auto",
                     }}
                 >
@@ -82,7 +117,7 @@ const BookDetail = (props: IProps) => {
                             <Col md={10} sm={0} xs={0}>
                                 <ImageGallery
                                     ref={refGallery}
-                                    items={images}
+                                    items={imageGallery}
                                     showPlayButton={false}
                                     showFullscreenButton={false}
                                     renderLeftNav={() => <></>}
@@ -97,7 +132,7 @@ const BookDetail = (props: IProps) => {
                                 <Col md={0} sm={24} xs={24}>
                                     <ImageGallery
                                         ref={refGallery}
-                                        items={images}
+                                        items={imageGallery}
                                         showPlayButton={false}          // hide play button
                                         showFullscreenButton={false}    // hide fullscreen button
                                         renderLeftNav={() => <></>}     // hide left arrow
@@ -109,11 +144,11 @@ const BookDetail = (props: IProps) => {
 
                                 <Col span={24}>
                                     <div className="author">
-                                        Tác giả: <a href="#">Jo Hemmings</a>
+                                        Tác giả: <a href="#">{currentBook?.author}</a>
                                     </div>
 
                                     <div className="title">
-                                        How Psychology Works - Hiểu Hết Về Tâm Lý Học
+                                        {currentBook?.mainText}
                                     </div>
 
                                     <div className="rating">
@@ -124,7 +159,7 @@ const BookDetail = (props: IProps) => {
                                         />
                                         <span className="sold">
                                             <Divider type="vertical" />
-                                            Đã bán 6969
+                                            Đã bán {currentBook?.sold ?? 0}
                                         </span>
                                     </div>
 
@@ -133,7 +168,7 @@ const BookDetail = (props: IProps) => {
                                             {new Intl.NumberFormat("vi-VN", {
                                                 style: "currency",
                                                 currency: "VND",
-                                            }).format(70000)}
+                                            }).format(currentBook?.price ?? 0)}
                                         </span>
                                     </div>
 
@@ -174,7 +209,8 @@ const BookDetail = (props: IProps) => {
                 isOpenModalGallery={isOpenModalGallery}
                 setIsOpenModalGallery={setIsOpenModalGallery}
                 currentIndex={currentIndex}
-                items={images}
+                items={imageGallery}
+                title={currentBook?.mainText ?? ""}
             />
         </>
     )

@@ -12,11 +12,11 @@ interface IProps {
         originalClass: string
         thumbnailClass: string
     }[]
-    // title: string
+    title: string
 }
 
 const ModalGallery = (props: IProps) => {
-    const { isOpenModalGallery, setIsOpenModalGallery, currentIndex, items } = props
+    const { isOpenModalGallery, setIsOpenModalGallery, currentIndex, items, title } = props
     const [activeIndex, setActiveIndex] = useState(0)
     const refGallery = useRef<ImageGallery>(null)
 
@@ -50,7 +50,7 @@ const ModalGallery = (props: IProps) => {
                 </Col>
 
                 <Col span={8}>
-                    <div>hahaha</div>
+                    <div style={{ padding: "5px 0 20px 0" }}>{title}</div>
                     <Row gutter={[16, 16]}>
                         {items?.map((item, i) => {
                             return (
