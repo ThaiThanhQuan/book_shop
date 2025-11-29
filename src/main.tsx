@@ -21,6 +21,7 @@ import ManageOrderPage from 'pages/admin/manage.order';
 import ManageUserPage from 'pages/admin/manage.user';
 import LayoutAdmin from 'components/layout/layout.admin';
 import enUS from 'antd/locale/en_US';
+import OrderPage from './pages/client/order';
 
 
 const router = createBrowserRouter([
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: "/book/:id",
         element: <div><BookPage /></div>
+      },
+      {
+        path: "/order",
+        element: <div><OrderPage /></div>
       },
       {
         path: "/about",

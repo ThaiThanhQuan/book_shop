@@ -1,14 +1,17 @@
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
-import { Col, Divider, Rate, Row } from "antd";
+import { App, Col, Divider, message, Rate, Row } from "antd";
 import { useEffect, useRef, useState } from "react"
 import { BsCartPlus } from "react-icons/bs";
 import ImageGallery from "react-image-gallery";
 import "styles/book.css"
 import ModalGallery from "./modal.gallery";
+import { useCurrentApp } from "@/components/context/app.context";
 
 interface IProps {
     currentBook: IBookTable | null
 }
+
+type UserAction = "MINUS" | "PLUS"
 
 const BookDetail = (props: IProps) => {
     const { currentBook } = props
@@ -24,6 +27,11 @@ const BookDetail = (props: IProps) => {
     const [currentIndex, setCurrentIndex] = useState(0)
 
     const refGallery = useRef<ImageGallery>(null)
+    const [currentQuantity, setCurrentQuantity] = useState<number>(1)
+
+    const { carts, setCarts } = useCurrentApp()
+
+    const { message } = App.useApp()
 
     // const images = [
     //     {
@@ -95,6 +103,65 @@ const BookDetail = (props: IProps) => {
         setIsOpenModalGallery(true)
         setCurrentIndex(refGallery?.current?.getCurrentIndex() ?? 0)
     }
+
+    const handleChangeButton = (type: UserAction) => {
+        if (type === "MINUS") {
+            if (currentQuantity - 1 <= 0) return;
+            setCurrentQuantity(currentQuantity - 1)
+        }
+        if (type === "PLUS" && currentBook) {
+            if (currentQuantity === +currentBook.quantity) return;
+            setCurrentQuantity(currentQuantity + 1)
+        }
+    }
+
+    const handleChangeInput = (value: string) => {
+        if (!isNaN(+value)) {
+            if (+value > 0 && currentBook && +value < +currentBook.quantity) {
+                setCurrentQuantity(+value)
+            }
+        }
+    }
+
+    const handleAddToCart = () => {
+        // update localstorage
+        const cartStorage = localStorage.getItem("carts");
+        if (cartStorage && currentBook) {
+            // update
+            const carts = JSON.parse(cartStorage) as ICart[]
+
+
+            // check exist
+            let isExistIndex = carts.findIndex(c => c._id === currentBook?._id)
+            if (isExistIndex > -1) {
+                carts[isExistIndex].quantity = carts[isExistIndex].quantity + currentQuantity
+            } else {
+                carts.push({
+                    quantity: currentQuantity,
+                    _id: currentBook._id,
+                    detail: currentBook
+                })
+            }
+
+            localStorage.setItem("carts", JSON.stringify(carts))
+
+            setCarts(carts)
+
+        } else {
+            // create
+            const data = [{
+                _id: currentBook?._id!,
+                quantity: currentQuantity,
+                detail: currentBook!
+            }]
+            localStorage.setItem("carts", JSON.stringify(data))
+
+            setCarts(data)
+        }
+        message.success("Thêm sản phẩm vào giỏ hàng thành công.")
+    }
+
+    console.log(carts)
 
     return (
         <>
@@ -182,18 +249,18 @@ const BookDetail = (props: IProps) => {
                                     <div className="quantity">
                                         <span className="left">Số lượng</span>
                                         <span className="right">
-                                            <button>
+                                            <button onClick={() => handleChangeButton("MINUS")}>
                                                 <MinusOutlined />
                                             </button>
-                                            <input defaultValue={1} />
-                                            <button>
+                                            <input onChange={(e) => handleChangeInput(e.target.value)} value={currentQuantity} />
+                                            <button onClick={() => handleChangeButton("PLUS")}>
                                                 <PlusOutlined />
                                             </button>
                                         </span>
                                     </div>
 
                                     <div className="buy">
-                                        <button className="cart">
+                                        <button className="cart" onClick={() => handleAddToCart()} >
                                             <BsCartPlus className="icon-cart" /> Thêm vào giỏ hàng
                                         </button>
                                         <button className="now">Mua ngay</button>
