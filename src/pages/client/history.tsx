@@ -95,14 +95,24 @@ const HistoryPage = () => {
                     setDataDetail(null)
                 }}
                 open={openDetail}
+                style={{ padding: '20px', background: '#f9f9f9' }} // nền Drawer
             >
                 {dataDetail?.detail?.map((item, index) => {
                     return (
-                        <ul key={index}>
-                            <li>
+                        <ul
+                            key={index}
+                            style={{
+                                listStyle: 'none',
+                                padding: '15px',
+                                marginBottom: '10px',
+                                borderRadius: '8px',
+                                background: '#fff',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                            }}>
+                            <li style={{ fontWeight: 600, fontSize: '16px', marginBottom: '5px' }}>
                                 Tên sách: {item.bookName}
                             </li>
-                            <li>
+                            <li style={{ fontSize: '14px', color: '#555' }}>
                                 Số lượng: {item.quantity}
                             </li>
                         </ul>

@@ -103,4 +103,8 @@ declare global {
         createdAt: Date;
         updatedAt: Date;
     }
+
+    interface IOrderTable extends IHistory {
+
+    }
 }

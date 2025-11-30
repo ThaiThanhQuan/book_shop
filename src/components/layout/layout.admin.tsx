@@ -75,7 +75,7 @@ const LayoutAdmin = () => {
         {
             label: <label
                 style={{ cursor: 'pointer' }}
-                onClick={() => alert("me")}
+                onClick={() => alert("Admin không đổi account được")}
             >Quản lý tài khoản</label>,
             key: 'account',
         },
