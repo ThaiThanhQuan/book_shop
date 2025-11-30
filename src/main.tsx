@@ -22,6 +22,7 @@ import ManageUserPage from 'pages/admin/manage.user';
 import LayoutAdmin from 'components/layout/layout.admin';
 import enUS from 'antd/locale/en_US';
 import OrderPage from './pages/client/order';
+import HistoryPage from './pages/client/history';
 
 
 const router = createBrowserRouter([
@@ -39,17 +40,20 @@ const router = createBrowserRouter([
       },
       {
         path: "/order",
-        element: <div><OrderPage /></div>
+        element: (
+          <ProtectedRoute>
+            <OrderPage />
+          </ProtectedRoute>)
       },
       {
         path: "/about",
         element: <div><AboutPage /></div>
       },
       {
-        path: "/checkout",
+        path: "/history",
         element: (
           <ProtectedRoute>
-            <div>checkout page</div>
+            <HistoryPage />
           </ProtectedRoute>
         )
       }

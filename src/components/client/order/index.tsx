@@ -1,12 +1,20 @@
 import { useCurrentApp } from "@/components/context/app.context"
 import { DeleteTwoTone } from "@ant-design/icons"
-import { Col, Divider, InputNumber, Row } from "antd"
+import { App, Button, Col, Divider, Empty, InputNumber, Row } from "antd"
 import { useEffect, useState } from "react"
 import "styles/order.scss"
 
-const OrderDetail = () => {
+interface IProps {
+    setCurrentStep: (v: number) => void
+}
+
+const OrderDetail = (props: IProps) => {
+    const { setCurrentStep } = props
+
     const { carts, setCarts } = useCurrentApp()
     const [totalPrice, setTotalPrice] = useState(0)
+
+    const { message } = App.useApp()
 
     useEffect(() => {
         if (carts && carts.length > 0) {
@@ -52,43 +60,58 @@ const OrderDetail = () => {
         }
     }
 
+    const handleNextStep = () => {
+        if (!carts.length) {
+            message.error("Không tồn tại sản phẩm trong giỏ hàng.")
+            return
+        }
+        setCurrentStep(1)
+    }
+
+
     return (
         <div style={{ background: '#efefef', padding: '20px 0' }}>
             <div className="order-container" style={{ maxWidth: 1440, margin: "0 auto" }}>
                 <Row gutter={[20, 20]}>
                     <Col md={18} xs={24}>
-                        {carts?.map((item, index) => {
-                            const currentBookPrice = item?.detail?.price ?? 0
-                            return (
-                                <div className="order-book" key={`index-${index}`}>
-                                    <div className="book-content">
-                                        <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item?.detail?.thumbnail}`} />
-                                        <div className="title">
-                                            {item?.detail?.mainText}
+                        {carts.length <= 0 ? <Empty /> :
+                            carts?.map((item, index) => {
+                                const currentBookPrice = item?.detail?.price ?? 0
+                                return (
+                                    <div className="order-book" key={`index-${index}`}>
+                                        <div className="book-content">
+                                            <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item?.detail?.thumbnail}`} />
+                                            <div className="title">
+                                                {item?.detail?.mainText}
+                                            </div>
+                                            <div className="price">
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.detail?.price ?? 0)}
+                                            </div>
                                         </div>
-                                        <div className="price">
-                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.detail?.price ?? 0)}
-                                        </div>
-                                    </div>
-                                    <div className="action">
-                                        <div className="quantity">
-                                            <InputNumber
-                                                onChange={(value) => handleOnChangeInput(value as number, item.detail)}
-                                                value={item.quantity}
+                                        <div className="action">
+                                            <div className="quantity">
+                                                <InputNumber
+                                                    onChange={(value) => handleOnChangeInput(value as number, item.detail)}
+                                                    value={item.quantity}
+                                                />
+                                            </div>
+                                            <div className="sum">
+                                                Tổng: {new Intl.NumberFormat('vi-VN', {
+                                                    style: 'currency',
+                                                    currency: 'VND'
+                                                }).format((item?.detail?.price || 0) * (item?.quantity || 0))}
+                                            </div>
+
+                                            <DeleteTwoTone
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => handleRemoveBook(item._id)}
+                                                twoToneColor="#eb2f96"
                                             />
                                         </div>
-                                        <div className="sum">
-                                            Giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.detail?.price ?? 0)}
-                                        </div>
-                                        <DeleteTwoTone
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={() => handleRemoveBook(item._id)}
-                                            twoToneColor="#eb2f96"
-                                        />
                                     </div>
-                                </div>
-                            )
-                        })}
+                                )
+                            })
+                        }
                     </Col>
 
                     <Col md={6} xs={24}>
@@ -107,12 +130,21 @@ const OrderDetail = () => {
                                 </span>
                             </div>
                             <Divider style={{ margin: '10px 0' }} />
-                            <button>Mua Hàng ({carts?.length ?? 0})</button>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <Button
+                                    color="danger"
+                                    variant="solid"
+                                    onClick={() => handleNextStep()}
+                                >
+                                    Mua hàng ({carts?.length ?? 0})
+                                </Button>
+                            </div>
+
                         </div>
                     </Col>
                 </Row>
             </div>
-        </div>
+        </div >
     )
 }
 
