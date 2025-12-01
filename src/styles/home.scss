@@ -76,13 +76,14 @@
 }
 
 .customize-row {
-    .column {
-        margin: 20px;
-    }
+    display: flex;
+    flex-wrap: wrap;
 
-    @media (max-width: 576px) {
-        .column {
-            margin: 0;
+    @media (min-width: 1200px) {
+
+        .book-item {
+            flex: 0 0 20%;
+            max-width: 20%;
         }
     }
 
@@ -101,7 +102,7 @@
             transform: translateY(-2px);
         }
 
-        .wrapper {
+        .thumbnail {
             position: relative;
             width: 100%;
             padding-top: 100%;
@@ -143,6 +144,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 0 12px 12px;
             font-size: 12px;
             color: #999;
 

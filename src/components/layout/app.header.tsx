@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaReact } from 'react-icons/fa'
 import { FiShoppingCart } from 'react-icons/fi';
 import { VscSearchFuzzy } from 'react-icons/vsc';
@@ -11,22 +11,38 @@ import { useCurrentApp } from 'components/context/app.context';
 import { logoutAPI } from '@/services/api';
 import ManageAccount from '../client/account';
 
-const AppHeader = (props: any) => {
+interface IProps {
+    searchTerm: string
+    setSearchTerm: (v: string) => void
+}
+
+const AppHeader = (props: IProps) => {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openManageAccount, setOpenManageAccount] = useState<boolean>(false)
 
-    const { isAuthenticated, user, setUser, setIsAuthenticated, carts } = useCurrentApp();
+    const { isAuthenticated, user, setUser, setIsAuthenticated, carts, setCarts } = useCurrentApp();
 
     const navigate = useNavigate();
+    const [isMobile, setIsMobile] = useState(false);
+
 
     const handleLogout = async () => {
         const res = await logoutAPI()
         if (res.data) {
             setUser(null)
+            setCarts([])
             setIsAuthenticated(false)
             localStorage.removeItem('access_token')
         }
     }
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize();
+        window.addEventListener("resize", handleResize);
+
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     let items = [
         {
@@ -103,8 +119,8 @@ const AppHeader = (props: any) => {
                             <input
                                 className="input-search" type={'text'}
                                 placeholder="Bạn tìm gì hôm nay"
-                            // value={props.searchTerm}
-                            // onChange={(e) => props.setSearchTerm(e.target.value)}
+                                value={props.searchTerm}
+                                onChange={(e) => props.setSearchTerm(e.target.value)}
                             />
                         </div>
 
@@ -112,21 +128,34 @@ const AppHeader = (props: any) => {
                     <nav className="page-header__bottom">
                         <ul id="navigation" className="navigation">
                             <li className="navigation__item">
-                                <Popover
-                                    className="popover-carts"
-                                    placement="topRight"
-                                    rootClassName="popover-carts"
-                                    title={"Sản phẩm mới thêm"}
-                                    content={contentPopover}
-                                    arrow={true}>
-                                    <Badge
-                                        count={carts?.length ?? 0}
-                                        size={"small"}
-                                        showZero
-                                    >
-                                        <FiShoppingCart className='icon-cart' />
-                                    </Badge>
-                                </Popover>
+                                {!isMobile
+                                    ? <Popover
+                                        className="popover-carts"
+                                        placement="topRight"
+                                        rootClassName="popover-carts"
+                                        title={"Sản phẩm mới thêm"}
+                                        content={contentPopover}
+                                        arrow={true}>
+                                        <Badge
+                                            count={carts?.length ?? 0}
+                                            size={"small"}
+                                            showZero
+                                        >
+                                            <FiShoppingCart className='icon-cart' />
+                                        </Badge>
+                                    </Popover>
+                                    :
+                                    <div style={{ marginRight: "0" }}>
+                                        <Badge
+                                            count={carts?.length ?? 0}
+                                            size='small'
+                                            showZero
+                                            onClick={() => navigate("/order")}
+                                        >
+                                            <FiShoppingCart size={"25px"} className='icon-cart' />
+                                        </Badge>
+                                    </div>
+                                }
                             </li>
                             <li className="navigation__item mobile"><Divider type='vertical' /></li>
                             <li className="navigation__item mobile">

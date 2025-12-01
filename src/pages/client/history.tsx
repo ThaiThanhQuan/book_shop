@@ -3,6 +3,7 @@ import { FORMATE_DATE_VN } from "@/services/helper";
 import { App, Divider, Drawer, Table, Tag, type TableProps } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 
 const HistoryPage = () => {
@@ -79,6 +80,25 @@ const HistoryPage = () => {
 
     return (
         <div style={{ margin: 50 }}>
+            <div
+                style={{
+                    padding: "6px 0px",
+                    margin: "4px 0",
+                }}
+            >
+                <Link
+                    to="/"
+                    style={{
+                        textDecoration: "none",
+                        color: "#1677ff",
+                        fontSize: "15px",
+                        fontWeight: 600,
+                    }}
+                >
+                    Trang chủ
+                </Link>
+            </div>
+
             <div>Lịch sử mua hàng</div>
             <Divider />
             <Table

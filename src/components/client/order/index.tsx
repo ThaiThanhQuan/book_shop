@@ -2,6 +2,7 @@ import { useCurrentApp } from "@/components/context/app.context"
 import { DeleteTwoTone } from "@ant-design/icons"
 import { App, Button, Col, Divider, Empty, InputNumber, Row } from "antd"
 import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import "styles/order.scss"
 
 interface IProps {
@@ -15,6 +16,7 @@ const OrderDetail = (props: IProps) => {
     const [totalPrice, setTotalPrice] = useState(0)
 
     const { message } = App.useApp()
+
 
     useEffect(() => {
         if (carts && carts.length > 0) {
@@ -71,7 +73,26 @@ const OrderDetail = (props: IProps) => {
 
     return (
         <div style={{ background: '#efefef', padding: '20px 0' }}>
-            <div className="order-container" style={{ maxWidth: 1440, margin: "0 auto" }}>
+            <div
+                style={{
+                    padding: "6px 10px",
+                    margin: "4px 0",
+                }}
+            >
+                <Link
+                    to="/"
+                    style={{
+                        textDecoration: "none",
+                        color: "#1677ff",
+                        fontSize: "15px",
+                        fontWeight: 600,
+                    }}
+                >
+                    Trang chủ
+                </Link>
+            </div>
+
+            <div className="order-container" style={{ maxWidth: 1440, margin: "0 auto", overflow: 'hidden' }}>
                 <Row gutter={[20, 20]}>
                     <Col md={18} xs={24}>
                         {carts.length <= 0 ? <Empty /> :

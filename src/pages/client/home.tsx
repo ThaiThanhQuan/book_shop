@@ -3,7 +3,7 @@ import { getBooksAPI, getCategoryAPI } from "@/services/api"
 import { FilterTwoTone, ReloadOutlined } from "@ant-design/icons"
 import { Button, Checkbox, Col, Divider, Form, InputNumber, Pagination, Rate, Row, Spin, Tabs, type FormProps } from "antd"
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useOutletContext } from "react-router-dom"
 import 'styles/home.scss'
 
 type FieldType = {
@@ -15,6 +15,8 @@ type FieldType = {
 }
 
 const HomePage = () => {
+    const [searchTerm] = useOutletContext() as any
+
     let navigate = useNavigate();
 
     const [listCategory, setListCategory] = useState<{
@@ -23,7 +25,7 @@ const HomePage = () => {
 
     const [listBook, setListBook] = useState<IBookTable[]>([])
     const [current, setCurrent] = useState<number>(1)
-    const [pageSize, setPageSize] = useState<number>(5)
+    const [pageSize, setPageSize] = useState<number>(10)
     const [total, setTotal] = useState<number>(0)
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -49,7 +51,7 @@ const HomePage = () => {
 
     useEffect(() => {
         fetchBook()
-    }, [current, pageSize, filter, sortQuery])
+    }, [current, pageSize, filter, sortQuery, searchTerm])
 
     const fetchBook = async () => {
         setIsLoading(true)
@@ -57,9 +59,15 @@ const HomePage = () => {
         if (filter) {
             query += `&${filter}`
         }
+
         if (sortQuery) {
             query += `&${sortQuery}`
         }
+
+        if (searchTerm) {
+            query += `&mainText=/${searchTerm}/i`
+        }
+
         const res = await getBooksAPI(query)
         if (res && res.data) {
             setListBook(res.data.result)
@@ -256,17 +264,17 @@ const HomePage = () => {
                                     {listBook?.map((item, index) => {
                                         return (
                                             <Col
-                                                xs={12}
-                                                sm={12}
-                                                md={8}
-                                                lg={4}
-                                                xl={4}
+                                                xs={12}   // 2 sản phẩm / row
+                                                sm={12}   // 2 sản phẩm / row
+                                                md={6}    // 4 sản phẩm / row
+                                                lg={6}    // Tạm set 2 sản phẩm / row, sẽ CSS lại
+                                                xl={6}
                                                 onClick={() => navigate(`/book/${item._id}`)}
-                                                className="column"
+                                                className="book-item"
                                                 key={`book-${index}`}>
 
                                                 <div className="wrapper">
-                                                    <div className="wrapper">
+                                                    <div className="thumbnail">
                                                         <img src={`${import.meta.env.VITE_BACKEND_URL}/images/book/${item.thumbnail}`} alt="thumbnail book" />
                                                     </div>
                                                     <div className="text" title={item.mainText}>{item.mainText}</div>

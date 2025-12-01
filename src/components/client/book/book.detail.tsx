@@ -6,6 +6,7 @@ import ImageGallery from "react-image-gallery";
 import "styles/book.css"
 import ModalGallery from "./modal.gallery";
 import { useCurrentApp } from "@/components/context/app.context";
+import { useNavigate } from "react-router-dom";
 
 interface IProps {
     currentBook: IBookTable | null
@@ -29,7 +30,9 @@ const BookDetail = (props: IProps) => {
     const refGallery = useRef<ImageGallery>(null)
     const [currentQuantity, setCurrentQuantity] = useState<number>(1)
 
-    const { carts, setCarts } = useCurrentApp()
+    const { carts, setCarts, user } = useCurrentApp()
+
+    const navigate = useNavigate();
 
     const { message } = App.useApp()
 
@@ -123,7 +126,12 @@ const BookDetail = (props: IProps) => {
         }
     }
 
-    const handleAddToCart = () => {
+    const handleAddToCart = (isBuyNow = false) => {
+        if (!user) {
+            message.error("Bạn cần đăng nhập để thực hiện tính năng này.")
+            return
+        }
+
         // update localstorage
         const cartStorage = localStorage.getItem("carts");
         if (cartStorage && currentBook) {
@@ -158,10 +166,14 @@ const BookDetail = (props: IProps) => {
 
             setCarts(data)
         }
-        message.success("Thêm sản phẩm vào giỏ hàng thành công.")
+
+        if (isBuyNow) {
+            navigate("/order")
+        } else {
+            message.success("Thêm sản phẩm vào giỏ hàng thành công.")
+        }
     }
 
-    console.log(carts)
 
     return (
         <>
@@ -263,7 +275,7 @@ const BookDetail = (props: IProps) => {
                                         <button className="cart" onClick={() => handleAddToCart()} >
                                             <BsCartPlus className="icon-cart" /> Thêm vào giỏ hàng
                                         </button>
-                                        <button className="now">Mua ngay</button>
+                                        <button className="now" onClick={() => handleAddToCart(true)} >Mua ngay</button>
                                     </div>
                                 </Col>
                             </Col>
